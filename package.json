@@ -1,0 +1,27 @@
+{
+  "name": "e-commerce",
+  "version": "1.0.0",
+  "description": "Full-stack E-commerce application with Django (Backend), Next.js (Frontend), PostgreSQL (Database), and Nginx (Reverse Proxy).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AymanRefat/Galaxy-ECommerce-SoftwareEng-Project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/AymanRefat/Galaxy-ECommerce-SoftwareEng-Project/issues"
+  },
+  "homepage": "https://github.com/AymanRefat/Galaxy-ECommerce-SoftwareEng-Project#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^20.4.1",
+    "@commitlint/config-conventional": "^20.4.1",
+    "husky": "^9.1.7"
+  }
+}
