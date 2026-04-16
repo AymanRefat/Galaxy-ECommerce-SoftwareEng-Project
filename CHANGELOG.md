@@ -1,3 +1,9 @@
+## v0.2.1 (2026-04-16)
+
+### Fix
+
+- fixed color contrast in primary button on landing page
+
 ## v0.2.0 (2026-04-16)
 
 ### Feat
