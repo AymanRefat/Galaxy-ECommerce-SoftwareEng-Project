@@ -9,24 +9,28 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       <section className="relative h-[65vh] min-h-[500px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent z-0"></div>
+        {/* Deep dark base for maximum contrast */}
+        <div className="absolute inset-0 bg-slate-950 z-0"></div>
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1472851294608-062f824d29cc?q=80&w=2000')] bg-cover bg-center mix-blend-overlay opacity-30 z-0"></div>
         
+        {/* Additional gradient overlay specifically for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/40 to-transparent z-0"></div>
+        
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto space-y-6 animate-in slide-in-from-bottom-8 duration-700">
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight drop-shadow-lg">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)]">
             Next Generation E-Commerce
           </h1>
-          <p className="text-xl md:text-2xl text-white/90 font-medium max-w-2xl mx-auto drop-shadow">
+          <p className="text-xl md:text-2xl text-slate-200 font-medium max-w-2xl mx-auto drop-shadow-md">
             Discover premium products or launch your own digital storefront today with Galaxy Store.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4 pt-6">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 pt-8">
             <Link href="/search">
-              <Button size="lg" className="w-full sm:w-auto bg-white text-primary hover:bg-gray-100 font-bold px-8 shadow-xl cursor-pointer">
+              <Button size="lg" className="w-full sm:w-auto font-bold px-10 py-6 text-lg shadow-2xl cursor-pointer">
                 Start Shopping
               </Button>
             </Link>
             <Link href="/seller/register">
-              <Button size="lg" className="w-full sm:w-auto bg-transparent border-2 border-white text-white hover:bg-white/10 font-bold px-8 cursor-pointer">
+              <Button size="lg" className="w-full sm:w-auto bg-black/40 backdrop-blur-md border border-white/30 text-white hover:bg-black/60 font-bold px-10 py-6 text-lg shadow-2xl cursor-pointer">
                 Become a Seller
               </Button>
             </Link>
