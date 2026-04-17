@@ -1,10 +1,11 @@
-import { mockProducts } from '@/lib/mockProducts';
 import { ProductCard } from '@/components/ui/ProductCard';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
+import { getProducts } from '@/lib/api';
 
-export default function Home() {
-  const featured = mockProducts.slice(0, 4);
+export default async function Home() {
+  const products = await getProducts();
+  const featured = products.slice(0, 4);
 
   return (
     <div className="flex flex-col">
@@ -67,3 +68,4 @@ export default function Home() {
     </div>
   );
 }
+

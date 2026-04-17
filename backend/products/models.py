@@ -26,6 +26,14 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def average_rating(self):
+        reviews = self.reviews.all()
+        if not reviews:
+            return 0
+        return sum([r.rating for r in reviews]) / len(reviews)
+
+
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='products/images/')
