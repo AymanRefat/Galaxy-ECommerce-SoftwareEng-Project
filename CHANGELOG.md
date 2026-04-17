@@ -1,3 +1,9 @@
+## v0.6.0 (2026-04-17)
+
+### Feat
+
+- migrate frontend from Next.js to Angular and stabilize backend environment
+
 ## v0.5.0 (2026-04-17)
 
 ### Feat
