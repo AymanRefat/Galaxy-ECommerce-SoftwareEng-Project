@@ -1,3 +1,9 @@
+## v0.3.0 (2026-04-17)
+
+### Feat
+
+- add automatic product generation and fix admin static files in docker
+
 ## v0.2.1 (2026-04-16)
 
 ### Fix
