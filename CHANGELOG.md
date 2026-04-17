@@ -1,3 +1,9 @@
+## v0.5.0 (2026-04-17)
+
+### Feat
+
+- include seed images in repo and update generation command
+
 ## v0.4.0 (2026-04-17)
 
 ### Feat
