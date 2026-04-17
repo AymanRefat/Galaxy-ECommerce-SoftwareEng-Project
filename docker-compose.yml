@@ -2,7 +2,6 @@
 services:
   backend:
     build: ./backend
-    command: gunicorn --bind 0.0.0.0:8000 config.wsgi:application
     volumes:
       - ./backend:/app
     ports:
@@ -10,10 +9,10 @@ services:
     depends_on:
       - db
     environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_HOST=db
+      - DB_NAME=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
     develop:
       watch:
         - action: sync

@@ -30,10 +30,13 @@ You can run the project either using Docker (recommended for a quick full-stack 
    - API Docs: `http://localhost/api/docs/`
    - Django Admin: `http://localhost/admin`
 
-4. To create a superuser inside the container:
+4. To create a superuser inside the container (though one is created automatically on startup):
    ```bash
    docker-compose exec backend python manage.py createsuperuser
    ```
+
+> [!NOTE]
+> The application automatically runs migrations and generates dummy data (including a superuser: `admin@admin.com` / `admin`) every time the backend container starts.
 
 ### Option B: Without Docker (Local Development)
 
@@ -56,9 +59,16 @@ You can run the project either using Docker (recommended for a quick full-stack 
    ```bash
    pip install -r requirements.txt
    ```
-4. Apply migrations and start the server:
+4. Apply migrations:
    ```bash
    python manage.py migrate
+   ```
+5. **(Optional)** Generate dummy initial data and a superuser (`admin@admin.com` / `admin`):
+   ```bash
+   python manage.py generate_random_products
+   ```
+6. Start the server:
+   ```bash
    python manage.py runserver
    ```
    The backend API will run on `http://127.0.0.1:8000/api/` and Docs at `http://127.0.0.1:8000/api/docs/`.

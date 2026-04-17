@@ -20,5 +20,12 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Database
+db.sqlite3
+*.sqlite3
+
+# Static files
+staticfiles/
+
 # Gunicorn
 *.ctl
