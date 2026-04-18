@@ -6,6 +6,7 @@ services:
       - ecom_network
     volumes:
       - ./backend:/app
+      - media_data:/app/media
     ports:
       - "8000:8000"
     depends_on:
@@ -48,6 +49,8 @@ services:
     build: ./nginx
     networks:
       - ecom_network
+    volumes:
+      - media_data:/media
     ports:
       - "80:80"
     depends_on:
@@ -71,4 +74,5 @@ networks:
 
 volumes:
   postgres_data:
+  media_data:
 

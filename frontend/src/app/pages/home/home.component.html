@@ -38,13 +38,22 @@
         <a routerLink="/search" class="view-all-link">View all curated items -></a>
       </div>
       
-      <div class="product-grid" *ngIf="featuredProducts.length > 0; else loading">
+      <div class="product-grid" *ngIf="featuredProducts.length > 0">
         <app-product-card *ngFor="let product of featuredProducts" [product]="product"></app-product-card>
       </div>
-      
-      <ng-template #loading>
-        <div class="loading-state">Loading products...</div>
-      </ng-template>
+
+      <div class="loading-state" *ngIf="loading && featuredProducts.length === 0">
+        <div class="spinner"></div>
+        <p>Loading products...</p>
+      </div>
+
+      <div class="empty-state" *ngIf="!loading && featuredProducts.length === 0 && !loadError">
+        <p>No products available yet. Check back soon!</p>
+      </div>
+
+      <div class="error-state" *ngIf="loadError">
+        <p>⚠️ Could not load products. Please refresh or try again later.</p>
+      </div>
     </div>
   </section>
 </div>

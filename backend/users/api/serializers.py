@@ -11,6 +11,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         fields = ['email', 'username', 'password', 'user_type', 'store_name']
 
     def create(self, validated_data):
+        from django.db import IntegrityError
+        from rest_framework.exceptions import ValidationError
+        
         user_type = validated_data.get('user_type', User.UserType.CONSUMER)
         store_name = validated_data.pop('store_name', None)
         password = validated_data.pop('password')
@@ -22,6 +25,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if user_type == User.UserType.VENDOR:
             if not store_name:
                 store_name = f"{user.username}'s Store"
-            VendorProfile.objects.create(user=user, store_name=store_name, is_approved=False)
+                
+            try:
+                VendorProfile.objects.create(user=user, store_name=store_name, is_approved=False)
+            except IntegrityError:
+                user.delete()
+                raise ValidationError({"store_name": "This store name is already taken. Please choose another."})
 
         return user

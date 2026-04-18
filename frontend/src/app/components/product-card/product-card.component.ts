@@ -10,8 +10,16 @@ export class ProductCardComponent {
   @Input() product!: Product;
 
   get primaryImageUrl(): string {
-    const primary = this.product.images.find(img => img.is_primary);
-    return primary ? primary.image : (this.product.images[0]?.image || '/placeholder.jpg');
+    const img = this.product.images.find(i => i.is_primary) || this.product.images[0];
+    if (!img) return 'assets/placeholder.jpg';
+    // Backend returns absolute URLs like http://localhost:8000/media/...
+    // Strip the origin so the path is relative (works via Nginx proxy on port 80)
+    try {
+      const url = new URL(img.image);
+      return url.pathname;
+    } catch {
+      return img.image;
+    }
   }
 
   get formattedPrice(): string {

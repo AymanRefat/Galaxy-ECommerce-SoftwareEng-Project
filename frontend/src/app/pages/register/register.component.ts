@@ -111,7 +111,13 @@ export class RegisterComponent {
     this.loading = true;
     this.error = '';
     
-    this.authService.register(this.registerForm.value).subscribe({
+    // Clean payload
+    const payload = { ...this.registerForm.value };
+    if (!payload.store_name || payload.store_name.trim() === '') {
+      delete payload.store_name;
+    }
+    
+    this.authService.register(payload).subscribe({
       next: () => {
         this.loading = false;
         if (this.registerForm.value.user_type === 'VENDOR') {
@@ -121,7 +127,8 @@ export class RegisterComponent {
         }
       },
       error: err => {
-        this.error = 'Registration failed. ' + JSON.stringify(err.error);
+        let msg = typeof err.error === 'object' ? JSON.stringify(err.error) : err.message || err.statusText;
+        this.error = 'Registration failed: ' + msg;
         this.loading = false;
       }
     });
