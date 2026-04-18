@@ -25,11 +25,12 @@ fi
 # Run migrations
 python manage.py migrate --noinput
 
+# Generate random data (limit to 60 seconds to prevent 504 during startup)
+timeout 60s python manage.py generate_random_products || echo "Data generation timed out, but continuing startup..."
+
 # Collect static files
 python manage.py collectstatic --noinput
 
-# Generate random data
-python manage.py generate_random_products
 
 # Start server
 exec "$@"

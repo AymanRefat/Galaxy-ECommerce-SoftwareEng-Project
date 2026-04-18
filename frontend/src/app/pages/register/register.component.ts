@@ -91,7 +91,7 @@ export class RegisterComponent {
       user_type: ['CONSUMER', Validators.required],
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      password: ['', [Validators.required, Validators.minLength(8)]],
       store_name: ['']
     });
   }
@@ -127,7 +127,15 @@ export class RegisterComponent {
         }
       },
       error: err => {
-        let msg = typeof err.error === 'object' ? JSON.stringify(err.error) : err.message || err.statusText;
+        console.error('Registration error:', err);
+        let msg = '';
+        if (err.error && typeof err.error === 'object') {
+          msg = Object.entries(err.error)
+            .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
+            .join(' | ');
+        } else {
+          msg = err.message || err.statusText || 'Unknown error';
+        }
         this.error = 'Registration failed: ' + msg;
         this.loading = false;
       }
