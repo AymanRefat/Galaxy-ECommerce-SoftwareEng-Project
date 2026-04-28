@@ -1,3 +1,12 @@
+## v0.8.0 (2026-04-28)
+
+### Feat
+
+- build role-based vendor dashboard using Django admin
+- implement store extension API and subscription expiry management
+- add secure checkout logic, transactions, and commission calculation
+- implement commission rates and store extension models
+
 ## v0.7.1 (2026-04-18)
 
 ### Refactor
