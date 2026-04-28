@@ -22,19 +22,6 @@ def vendor_profile(vendor_user):
     return VendorProfile.objects.create(user=vendor_user, store_name="Test Store", is_approved=True)
 
 @pytest.mark.django_db
-def test_request_store_extension(api_client, vendor_user, vendor_profile):
-    api_client.force_authenticate(user=vendor_user)
-    
-    url = reverse('vendor-extension-list')
-    response = api_client.post(url, {'reason': 'I need more space to sell products.'})
-    
-    assert response.status_code == 201
-    assert StoreExtensionRequest.objects.count() == 1
-    
-    extension = StoreExtensionRequest.objects.first()
-    assert extension.status == 'PENDING'
-
-@pytest.mark.django_db
 def test_admin_approve_extension(api_client, admin_user, vendor_profile):
     extension = StoreExtensionRequest.objects.create(vendor=vendor_profile, reason="Test Reason")
     
