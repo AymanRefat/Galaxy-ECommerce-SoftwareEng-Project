@@ -1,7 +1,8 @@
 import uuid
 from rest_framework import viewsets, permissions, status, decorators, response
 from django.shortcuts import get_object_or_404
-from orders.models import Cart, CartItem, Order, OrderItem
+from django.db import transaction as db_transaction
+from orders.models import Cart, CartItem, Order, OrderItem, Transaction
 from .serializers import CartSerializer, CartItemSerializer, OrderSerializer
 from products.models import Product
 
@@ -58,22 +59,62 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
         if not cart.items.exists():
             return response.Response({"detail": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
 
-        total_amount = sum(item.product.price * item.quantity for item in cart.items.all())
-        order = Order.objects.create(
-            user=request.user,
-            total_amount=total_amount,
-            tracking_number=str(uuid.uuid4()).split('-')[0].upper()
-        )
+        payment_token = request.data.get('payment_token')
+        if not payment_token:
+            return response.Response({"detail": "Payment token is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        for item in cart.items.all():
-            OrderItem.objects.create(
-                order=order,
-                product=item.product,
-                vendor=item.product.vendor,
-                quantity=item.quantity,
-                price_at_purchase=item.product.price
+        # Mock payment gateway verification
+        payment_status = 'SUCCESS' if payment_token != 'FAIL_TOKEN' else 'FAILED'
+
+        total_amount = sum(item.product.price * item.quantity for item in cart.items.all())
+        
+        with db_transaction.atomic():
+            order = Order.objects.create(
+                user=request.user,
+                total_amount=total_amount,
+                tracking_number=str(uuid.uuid4()).split('-')[0].upper()
             )
 
-        cart.items.all().delete()
+            # Create Transaction Record
+            Transaction.objects.create(
+                order=order,
+                transaction_id=f"txn_{uuid.uuid4().hex[:16]}",
+                amount=total_amount,
+                status=payment_status
+            )
+
+            if payment_status == 'FAILED':
+                order.status = 'CANCELLED'
+                order.save()
+                return response.Response({"detail": "Payment failed"}, status=status.HTTP_400_BAD_REQUEST)
+
+            for item in cart.items.all():
+                product = item.product
+                # Deduct stock
+                if product.stock_quantity < item.quantity:
+                    raise Exception(f"Not enough stock for {product.name}")
+                product.stock_quantity -= item.quantity
+                product.save()
+
+                # Calculate Commission
+                vendor = product.vendor
+                commission_rate = vendor.commission_rate if vendor else 10.00
+                price_at_purchase = product.price
+                total_item_price = price_at_purchase * item.quantity
+                commission_amount = (total_item_price * commission_rate) / 100
+                vendor_earnings = total_item_price - commission_amount
+
+                OrderItem.objects.create(
+                    order=order,
+                    product=product,
+                    vendor=vendor,
+                    quantity=item.quantity,
+                    price_at_purchase=price_at_purchase,
+                    commission_amount=commission_amount,
+                    vendor_earnings=vendor_earnings
+                )
+
+            cart.items.all().delete()
+
         serializer = OrderSerializer(order)
         return response.Response(serializer.data, status=status.HTTP_201_CREATED)

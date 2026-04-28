@@ -57,7 +57,7 @@ class TestOrderAPI:
         
         # Checkout
         url = '/api/orders/checkout/'
-        response = api_client.post(url)
+        response = api_client.post(url, {'payment_token': 'VALID_TOKEN'}, format='json')
         assert response.status_code == 201
         assert response.data['total_amount'] == '200.00'
         assert Order.objects.count() == 1
