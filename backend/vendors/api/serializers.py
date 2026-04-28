@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from vendors.models import VendorProfile
+from vendors.models import VendorProfile, StoreExtensionRequest
 from products.models import Product
 
 class VendorProfileSerializer(serializers.ModelSerializer):
@@ -7,6 +7,12 @@ class VendorProfileSerializer(serializers.ModelSerializer):
         model = VendorProfile
         fields = ['id', 'store_name', 'description', 'logo', 'banner', 'brand_colors', 'is_approved']
         read_only_fields = ['is_approved']
+
+class StoreExtensionRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StoreExtensionRequest
+        fields = ['id', 'vendor', 'reason', 'status', 'created_at']
+        read_only_fields = ['vendor', 'status']
 
 class VendorProductSerializer(serializers.ModelSerializer):
     class Meta:
