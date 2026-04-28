@@ -109,6 +109,24 @@ npm test
 - **Registration Verification**: The registration feature has been verified to prevent duplicate emails and usernames using database-level unique constraints and API validation.
 - **Role-Based Access**: The application supports different roles (`CONSUMER`, `VENDOR`, `ADMIN`) with corresponding dashboard redirections.
 
+## Vendor Dashboard (Django Admin Integration)
+
+The backend features a fully integrated **Vendor Dashboard** built directly into the Django Admin interface. 
+
+### Features:
+- **Role-Based Security:** Vendors can securely log into `/admin/` and will *only* see data belonging to their store. They cannot see other vendors' products or general administrative settings.
+- **Auto-Population:** When a vendor adds products or requests store extensions, their `vendor_profile` is automatically assigned in the background.
+- **Analytics:** A custom dashboard index shows real-time analytics for the logged-in vendor, including **Total Earnings**, **Items Sold**, and **Active Subscriptions**.
+- **Admin Management:** Admins can securely review and approve vendor profiles and store extension requests via the same admin interface.
+
+### Test Credentials
+To test the vendor dashboard, you can use the pre-configured approved vendor account:
+- **URL:** `http://127.0.0.1:8000/admin/`
+- **Username:** `vendor`
+- **Password:** `vendor123`
+
+*(Note: Ensure you have run migrations and the database has been seeded using the provided methods before logging in).*
+
 ## Development
 
 ### Code Scaffolding
