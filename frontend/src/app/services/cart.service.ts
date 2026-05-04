@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, map, switchMap, tap } from 'rxjs';
 import { Cart, CheckoutPayload } from '../models/cart.model';
 import { Order } from '../models/order.model';
 
@@ -30,6 +30,39 @@ export class CartService {
       quantity
     }).pipe(
       tap(() => this.refreshCartCount())
+    );
+  }
+
+  updateItemQuantity(productId: number, targetQuantity: number): Observable<Cart> {
+    return this.getCart().pipe(
+      switchMap((cart) => {
+        const existingItem = cart.items.find((item) => item.product === productId);
+        const currentQuantity = existingItem?.quantity || 0;
+        const delta = targetQuantity - currentQuantity;
+
+        if (!existingItem || delta === 0) {
+          return this.getCart();
+        }
+
+        return this.addItem(productId, delta).pipe(
+          switchMap(() => this.getCart())
+        );
+      })
+    );
+  }
+
+  removeItem(productId: number): Observable<Cart> {
+    return this.getCart().pipe(
+      map((cart) => cart.items.find((item) => item.product === productId)?.quantity || 0),
+      switchMap((quantity) => {
+        if (quantity <= 0) {
+          return this.getCart();
+        }
+
+        return this.addItem(productId, -quantity).pipe(
+          switchMap(() => this.getCart())
+        );
+      })
     );
   }
 

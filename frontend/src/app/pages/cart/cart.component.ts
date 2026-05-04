@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Cart, CheckoutPayload } from '../../models/cart.model';
+import { Cart, CartItem, CheckoutPayload } from '../../models/cart.model';
 import { CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
 
@@ -15,8 +15,8 @@ export class CartComponent implements OnInit {
   checkoutForm: FormGroup;
   loading = true;
   checkoutLoading = false;
+  updatingProductId: number | null = null;
   error = '';
-  infoMessage = '';
   successMessage = '';
 
   constructor(
@@ -42,15 +42,50 @@ export class CartComponent implements OnInit {
     this.loading = true;
     this.cartService.getCart().subscribe({
       next: (cart) => {
-        this.cart = cart;
+        this.cart = this.normalizeCart(cart);
         this.loading = false;
-        this.infoMessage = cart.items.length > 0
-          ? 'Cart quantity updates and removals still need backend APIs, so this page currently supports review and checkout only.'
-          : '';
       },
       error: () => {
         this.error = 'Unable to load your cart right now.';
         this.loading = false;
+      }
+    });
+  }
+
+  changeQuantity(item: CartItem, nextQuantity: number): void {
+    if (nextQuantity < 1 || this.updatingProductId !== null) {
+      return;
+    }
+
+    this.updatingProductId = item.product;
+    this.error = '';
+    this.cartService.updateItemQuantity(item.product, nextQuantity).subscribe({
+      next: (cart) => {
+        this.cart = this.normalizeCart(cart);
+        this.updatingProductId = null;
+      },
+      error: () => {
+        this.error = 'Unable to update that cart item right now.';
+        this.updatingProductId = null;
+      }
+    });
+  }
+
+  removeItem(item: CartItem): void {
+    if (this.updatingProductId !== null) {
+      return;
+    }
+
+    this.updatingProductId = item.product;
+    this.error = '';
+    this.cartService.removeItem(item.product).subscribe({
+      next: (cart) => {
+        this.cart = this.normalizeCart(cart);
+        this.updatingProductId = null;
+      },
+      error: () => {
+        this.error = 'Unable to remove that cart item right now.';
+        this.updatingProductId = null;
       }
     });
   }
@@ -86,14 +121,34 @@ export class CartComponent implements OnInit {
         this.checkoutForm.reset({ payment_token: 'VALID_TOKEN' });
         this.loadCart();
       },
-      error: (err) => {
+      error: (err: { error?: { detail?: string } }) => {
         this.checkoutLoading = false;
         this.error = err.error?.detail || 'Checkout failed. Try again with a valid payment token.';
       }
     });
   }
 
+  isInvalid(controlName: string): boolean {
+    const control = this.checkoutForm.get(controlName);
+    return !!control && control.invalid && (control.touched || control.dirty);
+  }
+
   get totalPrice(): string {
     return this.cart?.total_price || '0.00';
+  }
+
+  getLineTotal(item: CartItem): string {
+    return (Number(item.price) * item.quantity).toFixed(2);
+  }
+
+  private normalizeCart(cart: Cart): Cart {
+    const items = cart.items.filter((item) => item.quantity > 0);
+    const total = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
+
+    return {
+      ...cart,
+      items,
+      total_price: total.toFixed(2)
+    };
   }
 }

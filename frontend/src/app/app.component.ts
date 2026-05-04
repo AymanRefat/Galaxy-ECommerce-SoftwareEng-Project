@@ -13,7 +13,11 @@ import { CartService } from './services/cart.service';
 
           <div class="search-bar">
             <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" placeholder="Search products...">
-            <button class="search-btn" (click)="onSearch()" aria-label="Search products">&#128269;</button>
+            <button class="search-btn" (click)="onSearch()" aria-label="Search products">
+              <svg viewBox="0 0 24 24" aria-hidden="true" class="search-icon">
+                <path d="M10.5 4a6.5 6.5 0 1 0 4.03 11.6l4.43 4.43 1.41-1.41-4.43-4.43A6.5 6.5 0 0 0 10.5 4Zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z"></path>
+              </svg>
+            </button>
           </div>
 
           <div class="nav-links">
@@ -65,7 +69,8 @@ import { CartService } from './services/cart.service';
     .search-bar { display: flex; flex: 1; max-width: 400px; margin: 0 2rem; position: relative; }
     .search-bar input { width: 100%; padding: 0.6rem 1rem; border: 1px solid rgba(0,0,0,0.1); border-radius: var(--radius-full); font-size: 0.9rem; font-family: var(--font-body); outline: none; transition: border 0.3s; }
     .search-bar input:focus { border-color: var(--primary); }
-    .search-btn { position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); }
+    .search-btn { align-items: center; background: none; border: none; color: var(--text-muted); cursor: pointer; display: inline-flex; justify-content: center; padding: 0.2rem; position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%); }
+    .search-icon { fill: currentColor; height: 1.1rem; width: 1.1rem; }
 
     .nav-links { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; }
     .nav-link { font-weight: 500; color: var(--text-muted); font-size: 0.95rem; position: relative; }

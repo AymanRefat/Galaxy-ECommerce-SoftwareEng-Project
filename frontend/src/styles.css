@@ -120,3 +120,18 @@ ul { list-style: none; }
   padding: 4rem 1rem;
   color: var(--text-muted);
 }
+
+.form-control.is-invalid,
+input.is-invalid,
+textarea.is-invalid,
+select.is-invalid {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.field-error {
+  color: #b91c1c;
+  display: block;
+  font-size: 0.85rem;
+  margin-top: 0.45rem;
+}

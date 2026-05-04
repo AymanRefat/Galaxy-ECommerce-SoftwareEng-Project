@@ -11,22 +11,50 @@
     <section class="panel">
       <div class="panel-header">
         <h2>Cart Items</h2>
-        <span class="pill">{{ cart?.items?.length || 0 }} items</span>
+        <span class="pill">{{ cart.items.length }} items</span>
       </div>
 
-      <p *ngIf="infoMessage" class="info-banner">{{ infoMessage }}</p>
-
-      <div *ngIf="(cart?.items?.length || 0) === 0" class="state-card compact-card">
+      <div *ngIf="cart.items.length === 0" class="state-card compact-card">
         Your cart is empty. Add products from the catalog to start checkout.
       </div>
 
-      <div *ngIf="(cart?.items?.length || 0) > 0" class="items-list">
-        <article *ngFor="let item of cart?.items" class="cart-item">
-          <div>
-            <h3>{{ item.product_name }}</h3>
-            <p>Quantity: {{ item.quantity }}</p>
+      <div *ngIf="cart.items.length > 0" class="items-list">
+        <article *ngFor="let item of cart.items" class="cart-item">
+          <div class="item-main">
+            <div>
+              <h3>{{ item.product_name }}</h3>
+              <p>${{ item.price }} each</p>
+            </div>
+
+            <div class="quantity-controls">
+              <button
+                type="button"
+                class="quantity-btn"
+                (click)="changeQuantity(item, item.quantity - 1)"
+                [disabled]="item.quantity <= 1 || updatingProductId === item.product">
+                -
+              </button>
+              <span class="quantity-value">{{ item.quantity }}</span>
+              <button
+                type="button"
+                class="quantity-btn"
+                (click)="changeQuantity(item, item.quantity + 1)"
+                [disabled]="updatingProductId === item.product">
+                +
+              </button>
+            </div>
           </div>
-          <strong>${{ item.price }}</strong>
+
+          <div class="item-side">
+            <strong>${{ getLineTotal(item) }}</strong>
+            <button
+              type="button"
+              class="remove-btn"
+              (click)="removeItem(item)"
+              [disabled]="updatingProductId === item.product">
+              Remove
+            </button>
+          </div>
         </article>
       </div>
     </section>
@@ -39,31 +67,36 @@
 
       <p *ngIf="successMessage" class="success-banner">{{ successMessage }}</p>
 
-      <form [formGroup]="checkoutForm" (ngSubmit)="checkout()" class="checkout-form">
+      <form [formGroup]="checkoutForm" (ngSubmit)="checkout()" class="checkout-form" novalidate>
         <label>
           Full Name
-          <input type="text" formControlName="full_name" placeholder="Jane Doe">
+          <input type="text" formControlName="full_name" placeholder="Jane Doe" [class.is-invalid]="isInvalid('full_name')">
+          <span class="field-error" *ngIf="isInvalid('full_name')">Please enter your full name.</span>
         </label>
         <label>
           Phone
-          <input type="text" formControlName="phone" placeholder="+20 100 000 0000">
+          <input type="text" formControlName="phone" placeholder="+20 100 000 0000" [class.is-invalid]="isInvalid('phone')">
+          <span class="field-error" *ngIf="isInvalid('phone')">Please enter a phone number.</span>
         </label>
         <label>
           City
-          <input type="text" formControlName="city" placeholder="Cairo">
+          <input type="text" formControlName="city" placeholder="Cairo" [class.is-invalid]="isInvalid('city')">
+          <span class="field-error" *ngIf="isInvalid('city')">Please enter your city.</span>
         </label>
         <label>
           Address
-          <input type="text" formControlName="address_line" placeholder="Street, building, apartment">
+          <input type="text" formControlName="address_line" placeholder="Street, building, apartment" [class.is-invalid]="isInvalid('address_line')">
+          <span class="field-error" *ngIf="isInvalid('address_line')">Please enter a delivery address.</span>
         </label>
         <label>
           Payment Token
-          <input type="text" formControlName="payment_token" placeholder="VALID_TOKEN">
+          <input type="text" formControlName="payment_token" placeholder="VALID_TOKEN" [class.is-invalid]="isInvalid('payment_token')">
+          <span class="field-error" *ngIf="isInvalid('payment_token')">Please enter a payment token.</span>
         </label>
 
         <p class="helper-text">Use `VALID_TOKEN` for a successful mock payment or `FAIL_TOKEN` to test failure handling.</p>
 
-        <button class="btn btn-primary" type="submit" [disabled]="checkoutLoading || (cart?.items?.length || 0) === 0">
+        <button class="btn btn-primary" type="submit" [disabled]="checkoutLoading || cart.items.length === 0">
           {{ checkoutLoading ? 'Processing...' : 'Place Order' }}
         </button>
       </form>

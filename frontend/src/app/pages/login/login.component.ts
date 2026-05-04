@@ -13,16 +13,33 @@ import { AuthService } from '../../services/auth.service';
 
         <div *ngIf="error" class="error-alert">{{ error }}</div>
 
-        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
           <div class="form-group">
             <label>Email Address</label>
-            <input type="email" formControlName="email" class="form-control" placeholder="you@example.com">
+            <input
+              type="email"
+              formControlName="email"
+              class="form-control"
+              placeholder="you@example.com"
+              [class.is-invalid]="isInvalid('email')">
+            <span class="field-error" *ngIf="isInvalid('email') && loginForm.get('email')?.errors?.['required']">
+              Email is required.
+            </span>
+            <span class="field-error" *ngIf="isInvalid('email') && loginForm.get('email')?.errors?.['email']">
+              Please enter a valid email address.
+            </span>
           </div>
           <div class="form-group">
             <label>Password</label>
-            <input type="password" formControlName="password" class="form-control" placeholder="Enter your password">
+            <input
+              type="password"
+              formControlName="password"
+              class="form-control"
+              placeholder="Enter your password"
+              [class.is-invalid]="isInvalid('password')">
+            <span class="field-error" *ngIf="isInvalid('password')">Password is required.</span>
           </div>
-          <button type="submit" class="btn btn-primary w-100 mt-4" [disabled]="loginForm.invalid || loading">
+          <button type="submit" class="btn btn-primary w-100 mt-4" [disabled]="loading">
             {{ loading ? 'Signing in...' : 'Sign In' }}
           </button>
         </form>
@@ -70,6 +87,7 @@ export class LoginComponent {
 
   onSubmit(): void {
     if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
       return;
     }
 
@@ -92,10 +110,15 @@ export class LoginComponent {
           this.router.navigate(['/']);
         }
       },
-      error: (err) => {
+      error: (err: { error?: { detail?: string } }) => {
         this.error = err.error?.detail || 'Invalid login credentials.';
         this.loading = false;
       }
     });
+  }
+
+  isInvalid(controlName: string): boolean {
+    const control = this.loginForm.get(controlName);
+    return !!control && control.invalid && (control.touched || control.dirty);
   }
 }
