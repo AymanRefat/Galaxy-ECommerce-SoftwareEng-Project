@@ -1,0 +1,39 @@
+<div class="container orders-page">
+  <div class="page-header">
+    <h1>My Orders</h1>
+    <p>Track your order history and current fulfillment status.</p>
+  </div>
+
+  <div *ngIf="loading" class="state-card">Loading your orders...</div>
+  <div *ngIf="!loading && error" class="state-card error-card">{{ error }}</div>
+
+  <div *ngIf="!loading && !error && orders.length === 0" class="state-card">
+    You have not placed any orders yet.
+  </div>
+
+  <div *ngIf="!loading && orders.length > 0" class="orders-list">
+    <section *ngFor="let order of orders" class="order-card">
+      <div class="order-header">
+        <div>
+          <h2>{{ order.tracking_number }}</h2>
+          <p>{{ order.created_at | date:'medium' }}</p>
+        </div>
+        <div class="order-meta">
+          <span class="status-pill">{{ order.status }}</span>
+          <strong>${{ order.total_amount }}</strong>
+        </div>
+      </div>
+
+      <div class="order-items">
+        <article *ngFor="let item of order.items" class="order-item">
+          <span>{{ item.product_name }}</span>
+          <span>{{ item.quantity }} x ${{ item.price_at_purchase }}</span>
+        </article>
+      </div>
+
+      <p *ngIf="order.shipping_address" class="shipping-line">
+        Ships to {{ order.shipping_address.full_name }} in {{ order.shipping_address.city }}.
+      </p>
+    </section>
+  </div>
+</div>

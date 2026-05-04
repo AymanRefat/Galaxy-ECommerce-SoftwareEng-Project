@@ -1,0 +1,75 @@
+.orders-page {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-header p {
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+.orders-list {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.order-card,
+.state-card {
+  background: var(--bg-surface);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+}
+
+.error-card {
+  color: #b91c1c;
+}
+
+.order-header {
+  align-items: start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.order-header p,
+.shipping-line {
+  color: var(--text-muted);
+}
+
+.order-meta {
+  align-items: end;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.status-pill {
+  background: rgba(99, 102, 241, 0.12);
+  border-radius: var(--radius-full);
+  color: var(--primary-hover);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.35rem 0.8rem;
+}
+
+.order-items {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.order-item {
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-md);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+}

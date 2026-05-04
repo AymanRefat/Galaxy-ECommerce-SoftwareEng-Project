@@ -14,6 +14,8 @@ import { LoginComponent } from './pages/login/login.component';
 import { RegisterComponent } from './pages/register/register.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
 import { SellerDashboardComponent } from './pages/seller-dashboard/seller-dashboard.component';
+import { CartComponent } from './pages/cart/cart.component';
+import { OrdersComponent } from './pages/orders/orders.component';
 
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 
@@ -27,7 +29,9 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
     LoginComponent,
     RegisterComponent,
     AdminDashboardComponent,
-    SellerDashboardComponent
+    SellerDashboardComponent,
+    CartComponent,
+    OrdersComponent
   ],
   imports: [
     BrowserModule,

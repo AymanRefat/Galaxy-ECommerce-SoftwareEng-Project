@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from users.models import User
 from vendors.models import VendorProfile
 
@@ -33,3 +34,18 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 raise ValidationError({"store_name": "This store name is already taken. Please choose another."})
 
         return user
+
+
+class UserLoginSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['user_type'] = user.user_type
+        token['email'] = user.email
+        return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data['user_type'] = self.user.user_type
+        data['email'] = self.user.email
+        return data

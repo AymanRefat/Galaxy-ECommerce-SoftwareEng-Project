@@ -60,6 +60,7 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
             return response.Response({"detail": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
 
         payment_token = request.data.get('payment_token')
+        shipping_address = request.data.get('shipping_address')
         if not payment_token:
             return response.Response({"detail": "Payment token is required"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -72,7 +73,8 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
             order = Order.objects.create(
                 user=request.user,
                 total_amount=total_amount,
-                tracking_number=str(uuid.uuid4()).split('-')[0].upper()
+                tracking_number=str(uuid.uuid4()).split('-')[0].upper(),
+                shipping_address=shipping_address or None,
             )
 
             # Create Transaction Record

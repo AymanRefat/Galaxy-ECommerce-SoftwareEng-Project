@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { Product } from '../../models/product.model';
+import { CartService } from '../../services/cart.service';
 
 @Component({
   selector: 'app-product-card',
@@ -8,17 +9,22 @@ import { Product } from '../../models/product.model';
 })
 export class ProductCardComponent {
   @Input() product!: Product;
+  addingToCart = false;
+  addMessage = '';
+
+  constructor(private cartService: CartService) {}
 
   get primaryImageUrl(): string {
-    const img = this.product.images.find(i => i.is_primary) || this.product.images[0];
-    if (!img) return 'assets/placeholder.jpg';
-    // Backend returns absolute URLs like http://localhost:8000/media/...
-    // Strip the origin so the path is relative (works via Nginx proxy on port 80)
+    const image = this.product.images.find((item) => item.is_primary) || this.product.images[0];
+    if (!image) {
+      return 'assets/placeholder.jpg';
+    }
+
     try {
-      const url = new URL(img.image);
+      const url = new URL(image.image);
       return url.pathname;
     } catch {
-      return img.image;
+      return image.image;
     }
   }
 
@@ -28,5 +34,24 @@ export class ProductCardComponent {
 
   get formattedRating(): string {
     return Number(this.product.average_rating).toFixed(1);
+  }
+
+  addToCart(): void {
+    if (this.addingToCart) {
+      return;
+    }
+
+    this.addingToCart = true;
+    this.addMessage = '';
+    this.cartService.addItem(this.product.id).subscribe({
+      next: () => {
+        this.addMessage = 'Added to cart';
+        this.addingToCart = false;
+      },
+      error: () => {
+        this.addMessage = 'Unable to add right now';
+        this.addingToCart = false;
+      }
+    });
   }
 }

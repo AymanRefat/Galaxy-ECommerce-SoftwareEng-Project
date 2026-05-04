@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
-import { Subscription } from 'rxjs';
+import { CartService } from './services/cart.service';
 
 @Component({
   selector: 'app-root',
@@ -10,15 +10,19 @@ import { Subscription } from 'rxjs';
       <nav class="navbar">
         <div class="container nav-container flex items-center">
           <a routerLink="/" class="brand">GALAXY STORE</a>
-          
+
           <div class="search-bar">
             <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" placeholder="Search products...">
-            <button class="search-btn" (click)="onSearch()">🔍</button>
+            <button class="search-btn" (click)="onSearch()" aria-label="Search products">&#128269;</button>
           </div>
 
           <div class="nav-links">
             <a routerLink="/" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
-            
+            <a routerLink="/cart" class="nav-link" routerLinkActive="active">
+              Cart
+              <span class="cart-count" *ngIf="(cartService.cartCount$ | async) as cartCount">{{ cartCount }}</span>
+            </a>
+
             <ng-container *ngIf="!(authService.currentUser$ | async)">
               <a routerLink="/login" class="nav-link" routerLinkActive="active">Login</a>
               <a routerLink="/register" class="nav-link" routerLinkActive="active">Create Account</a>
@@ -26,6 +30,7 @@ import { Subscription } from 'rxjs';
 
             <ng-container *ngIf="authService.currentUser$ | async as user">
               <span class="user-greeting">Hi, {{ user.email }}</span>
+              <a routerLink="/orders" class="nav-link" routerLinkActive="active">My Orders</a>
               <a *ngIf="user.role === 'ADMIN'" routerLink="/admin" class="nav-link" routerLinkActive="active">Admin Dashboard</a>
               <a *ngIf="user.role === 'VENDOR'" routerLink="/seller/dashboard" class="nav-link" routerLinkActive="active">Store Dashboard</a>
               <a href="javascript:void(0)" class="nav-link" (click)="logout()">Logout</a>
@@ -56,19 +61,20 @@ import { Subscription } from 'rxjs';
     .navbar { background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 50; padding: 1rem 0; transition: all 0.3s; }
     .nav-container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
     .brand { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px; }
-    
+
     .search-bar { display: flex; flex: 1; max-width: 400px; margin: 0 2rem; position: relative; }
     .search-bar input { width: 100%; padding: 0.6rem 1rem; border: 1px solid rgba(0,0,0,0.1); border-radius: var(--radius-full); font-size: 0.9rem; font-family: var(--font-body); outline: none; transition: border 0.3s; }
     .search-bar input:focus { border-color: var(--primary); }
     .search-btn { position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); }
 
-    .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+    .nav-links { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; }
     .nav-link { font-weight: 500; color: var(--text-muted); font-size: 0.95rem; position: relative; }
     .nav-link:hover, .nav-link.active { color: var(--primary); }
     .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0%; height: 2px; background-color: var(--primary); transition: width 0.3s ease; border-radius: 2px; }
     .nav-link.active::after { width: 100%; }
     .user-greeting { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-right: 0.5rem; border-right: 1px solid #ccc; padding-right: 1rem; }
-    
+    .cart-count { background: var(--primary); border-radius: 999px; color: white; display: inline-flex; font-size: 0.75rem; justify-content: center; margin-left: 0.45rem; min-width: 1.25rem; padding: 0.1rem 0.35rem; }
+
     .main-content-area { flex-grow: 1; }
     .footer { background-color: var(--dark-bg); color: var(--text-muted); padding: 4rem 0 2rem; margin-top: 4rem; }
     .footer-container { display: flex; flex-direction: column; gap: 2rem; align-items: center; }
@@ -81,20 +87,24 @@ import { Subscription } from 'rxjs';
   `]
 })
 export class AppComponent {
-  title = 'frontend';
   searchQuery = '';
 
-  constructor(public authService: AuthService, private router: Router) {}
+  constructor(
+    public authService: AuthService,
+    public cartService: CartService,
+    private router: Router
+  ) {}
 
-  onSearch() {
+  onSearch(): void {
     if (this.searchQuery.trim()) {
       this.router.navigate(['/search'], { queryParams: { q: this.searchQuery } });
       this.searchQuery = '';
     }
   }
 
-  logout() {
+  logout(): void {
     this.authService.logout();
+    this.cartService.refreshCartCount();
     this.router.navigate(['/']);
   }
 }

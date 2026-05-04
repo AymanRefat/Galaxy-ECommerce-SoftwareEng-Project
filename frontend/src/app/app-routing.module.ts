@@ -7,6 +7,8 @@ import { LoginComponent } from './pages/login/login.component';
 import { RegisterComponent } from './pages/register/register.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
 import { SellerDashboardComponent } from './pages/seller-dashboard/seller-dashboard.component';
+import { CartComponent } from './pages/cart/cart.component';
+import { OrdersComponent } from './pages/orders/orders.component';
 import { AuthGuard } from './guards/auth.guard';
 
 const routes: Routes = [
@@ -15,6 +17,12 @@ const routes: Routes = [
   { path: 'search', component: SearchComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'cart', component: CartComponent },
+  {
+    path: 'orders',
+    component: OrdersComponent,
+    canActivate: [AuthGuard]
+  },
   { 
     path: 'admin', 
     component: AdminDashboardComponent,

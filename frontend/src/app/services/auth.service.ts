@@ -7,8 +7,7 @@ import { BehaviorSubject, Observable, tap } from 'rxjs';
 })
 export class AuthService {
   private apiUrl = '/api/users/';
-  
-  private currentUserSubject = new BehaviorSubject<any>(null);
+  private currentUserSubject = new BehaviorSubject<{ token: string; role: string; email: string } | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient) {
@@ -17,10 +16,10 @@ export class AuthService {
 
   private checkToken() {
     const token = localStorage.getItem('access_token');
-    const userRole = localStorage.getItem('user_role');
-    const email = localStorage.getItem('user_email');
-    if (token) {
-      this.currentUserSubject.next({ token, role: userRole, email: email });
+    const userRole = localStorage.getItem('user_role') || 'CONSUMER';
+    const email = localStorage.getItem('user_email') || '';
+    if (token && email) {
+      this.currentUserSubject.next({ token, role: userRole, email });
     }
   }
 
@@ -33,20 +32,12 @@ export class AuthService {
       tap((res: any) => {
         localStorage.setItem('access_token', res.access);
         localStorage.setItem('refresh_token', res.refresh);
-        
-        // In a real app, decode JWT to get role. Since we mock/return it,
-        // we'll assume the client requests role from a 'me' endpoint or sets a default
-        // For simplicity, we decode JWT locally if possible, or just look at username logic.
-        // Quick dirty JWT decode for user role if it's there
-        try {
-          const payload = JSON.parse(atob(res.access.split('.')[1]));
-          localStorage.setItem('user_role', payload.user_type || 'CONSUMER');
-          localStorage.setItem('user_email', payload.email || credentials.email);
-          this.currentUserSubject.next({ token: res.access, role: payload.user_type || 'CONSUMER', email: credentials.email });
-        } catch(e) {
-          localStorage.setItem('user_role', 'CONSUMER');
-          this.currentUserSubject.next({ token: res.access, role: 'CONSUMER', email: credentials.email });
-        }
+
+        const role = res.user_type || this.decodeToken(res.access)?.user_type || 'CONSUMER';
+        const email = res.email || this.decodeToken(res.access)?.email || credentials.email;
+        localStorage.setItem('user_role', role);
+        localStorage.setItem('user_email', email);
+        this.currentUserSubject.next({ token: res.access, role, email });
       })
     );
   }
@@ -65,5 +56,13 @@ export class AuthService {
 
   isLoggedIn() {
     return !!localStorage.getItem('access_token');
+  }
+
+  private decodeToken(token: string): { user_type?: string; email?: string } | null {
+    try {
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch {
+      return null;
+    }
   }
 }

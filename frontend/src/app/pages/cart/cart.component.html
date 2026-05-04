@@ -1,0 +1,72 @@
+<div class="container page-shell">
+  <div class="page-header">
+    <h1>Your Cart</h1>
+    <p>Review the items you have collected and complete the demo checkout flow.</p>
+  </div>
+
+  <div *ngIf="loading" class="state-card">Loading your cart...</div>
+  <div *ngIf="!loading && error" class="state-card error-card">{{ error }}</div>
+
+  <div *ngIf="!loading && cart" class="cart-layout">
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Cart Items</h2>
+        <span class="pill">{{ cart?.items?.length || 0 }} items</span>
+      </div>
+
+      <p *ngIf="infoMessage" class="info-banner">{{ infoMessage }}</p>
+
+      <div *ngIf="(cart?.items?.length || 0) === 0" class="state-card compact-card">
+        Your cart is empty. Add products from the catalog to start checkout.
+      </div>
+
+      <div *ngIf="(cart?.items?.length || 0) > 0" class="items-list">
+        <article *ngFor="let item of cart?.items" class="cart-item">
+          <div>
+            <h3>{{ item.product_name }}</h3>
+            <p>Quantity: {{ item.quantity }}</p>
+          </div>
+          <strong>${{ item.price }}</strong>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Checkout</h2>
+        <strong class="total-price">${{ totalPrice }}</strong>
+      </div>
+
+      <p *ngIf="successMessage" class="success-banner">{{ successMessage }}</p>
+
+      <form [formGroup]="checkoutForm" (ngSubmit)="checkout()" class="checkout-form">
+        <label>
+          Full Name
+          <input type="text" formControlName="full_name" placeholder="Jane Doe">
+        </label>
+        <label>
+          Phone
+          <input type="text" formControlName="phone" placeholder="+20 100 000 0000">
+        </label>
+        <label>
+          City
+          <input type="text" formControlName="city" placeholder="Cairo">
+        </label>
+        <label>
+          Address
+          <input type="text" formControlName="address_line" placeholder="Street, building, apartment">
+        </label>
+        <label>
+          Payment Token
+          <input type="text" formControlName="payment_token" placeholder="VALID_TOKEN">
+        </label>
+
+        <p class="helper-text">Use `VALID_TOKEN` for a successful mock payment or `FAIL_TOKEN` to test failure handling.</p>
+
+        <button class="btn btn-primary" type="submit" [disabled]="checkoutLoading || (cart?.items?.length || 0) === 0">
+          {{ checkoutLoading ? 'Processing...' : 'Place Order' }}
+        </button>
+      </form>
+    </section>
+  </div>
+</div>

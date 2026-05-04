@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -10,9 +10,9 @@ import { AuthService } from '../../services/auth.service';
       <div class="auth-card">
         <h2 class="auth-title">Welcome Back</h2>
         <p class="auth-subtitle">Login to your Galaxy Store account.</p>
-        
+
         <div *ngIf="error" class="error-alert">{{ error }}</div>
-        
+
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
           <div class="form-group">
             <label>Email Address</label>
@@ -20,13 +20,13 @@ import { AuthService } from '../../services/auth.service';
           </div>
           <div class="form-group">
             <label>Password</label>
-            <input type="password" formControlName="password" class="form-control" placeholder="••••••••">
+            <input type="password" formControlName="password" class="form-control" placeholder="Enter your password">
           </div>
           <button type="submit" class="btn btn-primary w-100 mt-4" [disabled]="loginForm.invalid || loading">
             {{ loading ? 'Signing in...' : 'Sign In' }}
           </button>
         </form>
-        
+
         <p class="auth-footer">Don't have an account? <a routerLink="/register">Register here</a></p>
       </div>
     </div>
@@ -52,27 +52,47 @@ export class LoginComponent {
   loginForm: FormGroup;
   loading = false;
   error = '';
+  private returnUrl = '/';
 
-  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
     });
+
+    this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
   }
 
-  onSubmit() {
-    if (this.loginForm.invalid) return;
+  onSubmit(): void {
+    if (this.loginForm.invalid) {
+      return;
+    }
+
     this.loading = true;
     this.error = '';
-    
+
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
         const role = this.authService.getRole();
-        if (role === 'ADMIN') this.router.navigate(['/admin']);
-        else if (role === 'VENDOR') this.router.navigate(['/seller/dashboard']);
-        else this.router.navigate(['/']);
+        if (this.returnUrl !== '/') {
+          this.router.navigateByUrl(this.returnUrl);
+          return;
+        }
+
+        if (role === 'ADMIN') {
+          this.router.navigate(['/admin']);
+        } else if (role === 'VENDOR') {
+          this.router.navigate(['/seller/dashboard']);
+        } else {
+          this.router.navigate(['/']);
+        }
       },
-      error: err => {
+      error: (err) => {
         this.error = err.error?.detail || 'Invalid login credentials.';
         this.loading = false;
       }
