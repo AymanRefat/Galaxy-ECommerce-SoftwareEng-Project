@@ -1,3 +1,9 @@
+## v0.9.1 (2026-05-04)
+
+### Fix
+
+- fixed search icon not showing up, improved invalid input handling, fixed cart management
+
 ## v0.9.0 (2026-05-04)
 
 ### Feat
