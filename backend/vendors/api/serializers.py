@@ -15,9 +15,11 @@ class StoreExtensionRequestSerializer(serializers.ModelSerializer):
         read_only_fields = ['vendor', 'status']
 
 class VendorProductSerializer(serializers.ModelSerializer):
+    average_rating = serializers.ReadOnlyField()
+
     class Meta:
         model = Product
-        fields = ['id', 'category', 'name', 'description', 'price', 'stock_quantity', 'sku', 'created_at', 'updated_at']
+        fields = ['id', 'category', 'name', 'description', 'price', 'stock_quantity', 'sku', 'average_rating', 'created_at', 'updated_at']
 
 from orders.models import OrderItem
 

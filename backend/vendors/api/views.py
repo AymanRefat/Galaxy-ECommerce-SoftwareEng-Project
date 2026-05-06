@@ -5,9 +5,43 @@ from vendors.models import VendorProfile, StoreExtensionRequest
 from products.models import Product
 from .serializers import VendorProfileSerializer, VendorProductSerializer, StoreExtensionRequestSerializer
 
+class IsVendorUser(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.user_type == 'VENDOR'
+        )
+
 class PublicVendorViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = VendorProfile.objects.filter(is_approved=True)
     serializer_class = VendorProfileSerializer
+
+class VendorDashboardProfileViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = VendorProfileSerializer
+    permission_classes = [IsVendorUser]
+
+    def get_queryset(self):
+        return VendorProfile.objects.filter(user=self.request.user)
+
+class VendorDashboardProductViewSet(viewsets.ModelViewSet):
+    serializer_class = VendorProductSerializer
+    permission_classes = [IsVendorUser]
+
+    def get_vendor_profile(self):
+        try:
+            return self.request.user.vendor_profile
+        except VendorProfile.DoesNotExist:
+            raise exceptions.NotFound('Vendor profile not found.')
+
+    def get_queryset(self):
+        return Product.objects.filter(vendor=self.get_vendor_profile()).order_by('-id')
+
+    def perform_create(self, serializer):
+        vendor_profile = self.get_vendor_profile()
+        if not vendor_profile.is_approved:
+            raise exceptions.PermissionDenied('Your vendor account is pending approval.')
+        serializer.save(vendor=vendor_profile)
 
 class AdminVendorViewSet(viewsets.ModelViewSet):
     serializer_class = VendorProfileSerializer
