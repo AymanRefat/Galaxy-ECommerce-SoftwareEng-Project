@@ -94,3 +94,18 @@ def test_failed_checkout(api_client, user, product):
     # Stock should not be deducted
     product.refresh_from_db()
     assert product.stock_quantity == 10
+
+@pytest.mark.django_db
+def test_checkout_returns_stock_specific_error(api_client, user, product):
+    api_client.force_authenticate(user=user)
+    add_cart_url = reverse('cart-add-item')
+    api_client.post(add_cart_url, {'product': product.id, 'quantity': 2})
+
+    product.stock_quantity = 1
+    product.save(update_fields=['stock_quantity'])
+
+    checkout_url = reverse('order-checkout')
+    response = api_client.post(checkout_url, {'payment_token': 'VALID_TOKEN'})
+
+    assert response.status_code == 400
+    assert 'still available' in response.data['detail']

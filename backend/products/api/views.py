@@ -3,6 +3,21 @@ from django_filters.rest_framework import DjangoFilterBackend
 from products.models import Product, Category
 from .serializers import ProductSerializer, CategorySerializer
 
+DEFAULT_CATEGORIES = [
+    ('electronics', 'Electronics'),
+    ('accessories', 'Accessories'),
+    ('furniture', 'Furniture'),
+    ('home-goods', 'Home Goods'),
+    ('fashion', 'Fashion'),
+    ('beauty', 'Beauty'),
+    ('sports', 'Sports'),
+    ('books', 'Books'),
+    ('gaming', 'Gaming'),
+    ('office', 'Office'),
+    ('kitchen', 'Kitchen'),
+    ('outdoor', 'Outdoor'),
+]
+
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Product.objects.all().order_by('-created_at')
     serializer_class = ProductSerializer
@@ -11,8 +26,12 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     search_fields = ['name', 'description']
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Category.objects.all()
     serializer_class = CategorySerializer
+
+    def get_queryset(self):
+        for slug, name in DEFAULT_CATEGORIES:
+            Category.objects.get_or_create(slug=slug, defaults={'name': name})
+        return Category.objects.all().order_by('name')
 
 from rest_framework import permissions, exceptions
 from orders.models import OrderItem

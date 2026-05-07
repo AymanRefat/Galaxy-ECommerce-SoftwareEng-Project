@@ -30,18 +30,35 @@ class CartViewSet(viewsets.ViewSet):
         product_id = request.data.get('product')
         if not product_id:
              return response.Response({"detail": "product ID required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        quantity = int(request.data.get('quantity', 1))
+
+        try:
+            quantity = int(request.data.get('quantity', 1))
+        except (TypeError, ValueError):
+            return response.Response({"detail": "Quantity must be a whole number."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if quantity == 0:
+            return response.Response({"detail": "Quantity change cannot be zero."}, status=status.HTTP_400_BAD_REQUEST)
 
         product = get_object_or_404(Product, id=product_id)
         cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-        
-        if not created:
-            cart_item.quantity += quantity
-            cart_item.save()
-        else:
-            cart_item.quantity = quantity
-            cart_item.save()
+
+        target_quantity = quantity if created else cart_item.quantity + quantity
+
+        if target_quantity <= 0:
+            if created:
+                cart_item.delete()
+            else:
+                cart_item.delete()
+            return response.Response({"detail": "Item removed from cart."}, status=status.HTTP_200_OK)
+
+        if target_quantity > product.stock_quantity:
+            return response.Response(
+                {"detail": f"Only {product.stock_quantity} item(s) of {product.name} are available in stock."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        cart_item.quantity = target_quantity
+        cart_item.save()
 
         serializer = CartItemSerializer(cart_item)
         return response.Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -56,7 +73,10 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
     @decorators.action(detail=False, methods=['post'])
     def checkout(self, request):
         cart = get_or_create_cart(request)
-        if not cart.items.exists():
+        cart.items.filter(quantity__lte=0).delete()
+        active_items = cart.items.select_related('product__vendor').filter(quantity__gt=0)
+
+        if not active_items.exists():
             return response.Response({"detail": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
 
         payment_token = request.data.get('payment_token')
@@ -67,7 +87,14 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
         # Mock payment gateway verification
         payment_status = 'SUCCESS' if payment_token != 'FAIL_TOKEN' else 'FAILED'
 
-        total_amount = sum(item.product.price * item.quantity for item in cart.items.all())
+        for item in active_items:
+            if item.product.stock_quantity < item.quantity:
+                return response.Response(
+                    {"detail": f"Only {item.product.stock_quantity} item(s) of {item.product.name} are still available."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        total_amount = sum(item.product.price * item.quantity for item in active_items)
         
         with db_transaction.atomic():
             order = Order.objects.create(
@@ -90,11 +117,8 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
                 order.save()
                 return response.Response({"detail": "Payment failed"}, status=status.HTTP_400_BAD_REQUEST)
 
-            for item in cart.items.all():
+            for item in active_items:
                 product = item.product
-                # Deduct stock
-                if product.stock_quantity < item.quantity:
-                    raise Exception(f"Not enough stock for {product.name}")
                 product.stock_quantity -= item.quantity
                 product.save()
 

@@ -1,4 +1,5 @@
 from rest_framework import viewsets, permissions, exceptions
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from vendors.models import VendorProfile, StoreExtensionRequest
@@ -64,6 +65,7 @@ class VendorDashboardProfileViewSet(viewsets.ViewSet):
 class VendorDashboardProductViewSet(viewsets.ModelViewSet):
     serializer_class = VendorProductSerializer
     permission_classes = [IsVendorUser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_queryset(self):
         return Product.objects.filter(vendor=self.request.user.vendor_profile).order_by('-created_at')

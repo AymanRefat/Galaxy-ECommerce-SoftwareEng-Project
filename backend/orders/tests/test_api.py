@@ -66,3 +66,18 @@ class TestOrderAPI:
         # Check cart is empty
         response = api_client.get('/api/cart/')
         assert len(response.data['items']) == 0
+
+    def test_add_to_cart_rejects_quantity_above_stock(self, api_client, product):
+        response = api_client.post('/api/cart/add_item/', {'product': product.id, 'quantity': 11}, format='json')
+        assert response.status_code == 400
+        assert 'available in stock' in response.data['detail']
+
+    def test_removing_item_deletes_zero_quantity_cart_row(self, api_client, consumer_user, product):
+        api_client.force_authenticate(user=consumer_user)
+        api_client.post('/api/cart/add_item/', {'product': product.id, 'quantity': 2}, format='json')
+        response = api_client.post('/api/cart/add_item/', {'product': product.id, 'quantity': -2}, format='json')
+
+        assert response.status_code == 200
+        cart_response = api_client.get('/api/cart/')
+        assert cart_response.status_code == 200
+        assert cart_response.data['items'] == []

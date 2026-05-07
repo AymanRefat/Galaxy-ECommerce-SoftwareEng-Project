@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ProductService } from '../../services/product.service';
-import { Product } from '../../models/product.model';
+import { Category, Product } from '../../models/product.model';
 
 @Component({
   selector: 'app-home',
@@ -9,18 +9,19 @@ import { Product } from '../../models/product.model';
 })
 export class HomeComponent implements OnInit {
   featuredProducts: Product[] = [];
+  categories: Category[] = [];
   loading = true;
   loadError = false;
-  categories = [
-    { name: 'Electronics', slug: 'electronics' },
-    { name: 'Accessories', slug: 'accessories' },
-    { name: 'Furniture', slug: 'furniture' },
-    { name: 'Home Goods', slug: 'home-goods' }
-  ];
 
   constructor(private productService: ProductService) {}
 
   ngOnInit(): void {
+    this.productService.getCategories().subscribe({
+      next: (categories) => {
+        this.categories = categories.slice(0, 8);
+      }
+    });
+
     this.productService.getProducts().subscribe({
       next: (products) => {
         this.featuredProducts = products.slice(0, 4);

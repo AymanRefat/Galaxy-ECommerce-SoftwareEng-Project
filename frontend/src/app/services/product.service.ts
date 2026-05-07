@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Product } from '../models/product.model';
+import { Category, Product } from '../models/product.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
   private apiUrl = '/api/products/';
+  private categoriesUrl = '/api/categories/';
 
   constructor(private http: HttpClient) { }
 
@@ -24,5 +25,9 @@ export class ProductService {
 
   getProductById(id: number): Observable<Product> {
     return this.http.get<Product>(`${this.apiUrl}${id}/`);
+  }
+
+  getCategories(): Observable<Category[]> {
+    return this.http.get<Category[]>(this.categoriesUrl);
   }
 }

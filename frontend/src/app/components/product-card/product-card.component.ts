@@ -48,8 +48,8 @@ export class ProductCardComponent {
         this.addMessage = 'Added to cart';
         this.addingToCart = false;
       },
-      error: () => {
-        this.addMessage = 'Unable to add right now';
+      error: (err: { error?: { detail?: string } }) => {
+        this.addMessage = err.error?.detail || 'Unable to add right now';
         this.addingToCart = false;
       }
     });

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from vendors.models import VendorProfile, StoreExtensionRequest
-from products.models import Product, Category
-from products.api.serializers import CategorySerializer
+from products.models import Product, Category, ProductImage
+from products.api.serializers import CategorySerializer, ProductImageSerializer
 from orders.models import OrderItem
 
 
@@ -33,6 +33,8 @@ class StoreExtensionRequestSerializer(serializers.ModelSerializer):
 
 class VendorProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
+    images = ProductImageSerializer(many=True, read_only=True)
+    image_file = serializers.ImageField(write_only=True, required=False, allow_null=True)
     category_id = serializers.PrimaryKeyRelatedField(
         source='category',
         queryset=Category.objects.all(),
@@ -48,6 +50,8 @@ class VendorProductSerializer(serializers.ModelSerializer):
             'id',
             'category',
             'category_id',
+            'images',
+            'image_file',
             'name',
             'description',
             'price',
@@ -57,6 +61,13 @@ class VendorProductSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+
+    def create(self, validated_data):
+        image_file = validated_data.pop('image_file', None)
+        product = super().create(validated_data)
+        if image_file:
+            ProductImage.objects.create(product=product, image=image_file, is_primary=True)
+        return product
 
 
 class VendorOrderItemSerializer(serializers.ModelSerializer):

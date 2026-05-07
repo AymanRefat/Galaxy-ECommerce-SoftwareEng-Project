@@ -64,8 +64,8 @@ export class CartComponent implements OnInit {
         this.cart = this.normalizeCart(cart);
         this.updatingProductId = null;
       },
-      error: () => {
-        this.error = 'Unable to update that cart item right now.';
+      error: (err: { error?: { detail?: string } }) => {
+        this.error = err.error?.detail || 'Unable to update that cart item right now.';
         this.updatingProductId = null;
       }
     });
@@ -83,8 +83,8 @@ export class CartComponent implements OnInit {
         this.cart = this.normalizeCart(cart);
         this.updatingProductId = null;
       },
-      error: () => {
-        this.error = 'Unable to remove that cart item right now.';
+      error: (err: { error?: { detail?: string } }) => {
+        this.error = err.error?.detail || 'Unable to remove that cart item right now.';
         this.updatingProductId = null;
       }
     });

@@ -17,6 +17,12 @@ interface SellerCategory {
   slug: string;
 }
 
+interface SellerProductImage {
+  id: number;
+  image: string;
+  is_primary: boolean;
+}
+
 interface SellerProduct {
   id: number;
   name: string;
@@ -26,6 +32,7 @@ interface SellerProduct {
   sku: string;
   average_rating: number;
   category: SellerCategory | null;
+  images: SellerProductImage[];
 }
 
 interface SellerOrderItem {
@@ -106,6 +113,12 @@ interface SellerOrderItem {
             </div>
 
             <div class="form-group">
+              <label>Primary Product Image</label>
+              <input type="file" class="form-control" accept="image/*" (change)="onImageSelected($event)">
+              <span class="helper-text" *ngIf="selectedImage">Selected: {{ selectedImage.name }}</span>
+            </div>
+
+            <div class="form-group">
               <label>Description</label>
               <textarea formControlName="description" class="form-control" rows="4" placeholder="Describe the key product features..." [class.is-invalid]="isProductInvalid('description')"></textarea>
               <span class="field-error" *ngIf="isProductInvalid('description')">Description is required.</span>
@@ -162,6 +175,7 @@ interface SellerOrderItem {
                 <th>Price</th>
                 <th>Stock</th>
                 <th>Rating</th>
+                <th>Image</th>
                 <th></th>
               </tr>
             </thead>
@@ -179,6 +193,7 @@ interface SellerOrderItem {
                     (input)="updateStockDraft(product, $any($event.target).value)">
                 </td>
                 <td>{{ product.average_rating || 0 | number:'1.1-1' }}</td>
+                <td>{{ product.images.length > 0 ? 'Uploaded' : 'None' }}</td>
                 <td>
                   <button class="btn btn-secondary btn-sm" (click)="saveStock(product)" [disabled]="stockSavingId === product.id || !vendorProfile?.is_approved">
                     {{ stockSavingId === product.id ? 'Saving...' : 'Save Stock' }}
@@ -227,7 +242,7 @@ interface SellerOrderItem {
                     <option *ngFor="let status of orderStatuses" [value]="status">{{ status }}</option>
                   </select>
                 </td>
-                <td>$\{{ order.vendor_earnings }}</td>
+                <td>\${{ order.vendor_earnings }}</td>
                 <td>
                   <button class="btn btn-secondary btn-sm" (click)="saveOrderStatus(order)" [disabled]="orderSavingId === order.id || !vendorProfile?.is_approved">
                     {{ orderSavingId === order.id ? 'Saving...' : 'Update' }}
@@ -247,6 +262,7 @@ interface SellerOrderItem {
     .hero-meta { align-items: end; display: flex; flex-direction: column; gap: 0.75rem; }
     .title { font-size: 2.5rem; letter-spacing: -0.5px; }
     .subtitle, .muted-copy { color: var(--text-muted); }
+    .helper-text { color: var(--text-muted); display: block; font-size: 0.85rem; margin-top: 0.45rem; }
     .badge { border-radius: 999px; font-size: 0.8rem; font-weight: 700; padding: 0.35rem 0.8rem; text-transform: uppercase; }
     .badge-success { background: #dcfce7; color: #166534; }
     .badge-warning { background: #fef3c7; color: #92400e; }
@@ -292,6 +308,7 @@ export class SellerDashboardComponent implements OnInit {
   orderSavingId: number | null = null;
   pageError = '';
   successMessage = '';
+  selectedImage: File | null = null;
   orderStatuses = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
 
   constructor(private fb: FormBuilder, private http: HttpClient) {
@@ -357,10 +374,21 @@ export class SellerDashboardComponent implements OnInit {
     this.pageError = '';
     this.successMessage = '';
 
-    this.http.post<SellerProduct>('/api/vendors/dashboard/products/', this.productForm.value).subscribe({
+    const formData = new FormData();
+    Object.entries(this.productForm.value).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') {
+        formData.append(key, String(value));
+      }
+    });
+    if (this.selectedImage) {
+      formData.append('image_file', this.selectedImage);
+    }
+
+    this.http.post<SellerProduct>('/api/vendors/dashboard/products/', formData).subscribe({
       next: (product) => {
         this.products.unshift(product);
         this.productForm.reset();
+        this.selectedImage = null;
         this.productLoading = false;
         this.successMessage = 'Product published successfully.';
       },
@@ -369,6 +397,11 @@ export class SellerDashboardComponent implements OnInit {
         this.productLoading = false;
       }
     });
+  }
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.selectedImage = input.files && input.files.length > 0 ? input.files[0] : null;
   }
 
   saveStock(product: SellerProduct): void {
