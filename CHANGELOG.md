@@ -1,3 +1,9 @@
+## v0.10.1 (2026-05-07)
+
+### Fix
+
+- cart image bug,  added image for product, added more product categories
+
 ## v0.10.0 (2026-05-07)
 
 ### Feat
