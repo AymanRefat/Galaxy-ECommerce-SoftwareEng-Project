@@ -1,3 +1,9 @@
+## v0.10.0 (2026-05-07)
+
+### Feat
+
+- first implementation of admin flow
+
 ## v0.9.1 (2026-05-04)
 
 ### Fix
