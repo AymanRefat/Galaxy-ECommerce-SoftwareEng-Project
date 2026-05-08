@@ -258,8 +258,8 @@ interface SellerOrderItem {
   styles: [`
     .dashboard-shell { padding-top: 3rem; padding-bottom: 3rem; display: grid; gap: 1.5rem; }
     .hero-card, .card { background: white; border-radius: var(--radius-lg); border: 1px solid rgba(0,0,0,0.06); box-shadow: var(--shadow-sm); }
-    .hero-card { align-items: start; display: flex; justify-content: space-between; gap: 1rem; padding: 2rem; }
-    .hero-meta { align-items: end; display: flex; flex-direction: column; gap: 0.75rem; }
+    .hero-card { align-items: flex-start; display: flex; justify-content: space-between; gap: 1rem; padding: 2rem; }
+    .hero-meta { align-items: flex-end; display: flex; flex-direction: column; gap: 0.75rem; }
     .title { font-size: 2.5rem; letter-spacing: -0.5px; }
     .subtitle, .muted-copy { color: var(--text-muted); }
     .helper-text { color: var(--text-muted); display: block; font-size: 0.85rem; margin-top: 0.45rem; }
@@ -293,7 +293,7 @@ interface SellerOrderItem {
     .btn-sm { font-size: 0.875rem; padding: 0.6rem 1rem; }
     @media (max-width: 767px) {
       .hero-card { flex-direction: column; }
-      .hero-meta { align-items: start; }
+      .hero-meta { align-items: flex-start; }
     }
   `]
 })

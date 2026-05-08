@@ -31,7 +31,7 @@
 }
 
 .order-header {
-  align-items: start;
+  align-items: flex-start;
   display: flex;
   gap: 1rem;
   justify-content: space-between;
@@ -44,7 +44,7 @@
 }
 
 .order-meta {
-  align-items: end;
+  align-items: flex-end;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
