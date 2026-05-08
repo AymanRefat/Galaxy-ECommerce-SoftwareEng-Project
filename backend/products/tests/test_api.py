@@ -2,6 +2,7 @@ import pytest
 from rest_framework.test import APIClient
 from django.urls import reverse
 from products.models import Product, Category
+from products.api.views import DEFAULT_CATEGORIES
 from vendors.models import VendorProfile
 from users.models import User
 from orders.models import Order, OrderItem
@@ -48,8 +49,11 @@ class TestProductAPI:
         url = '/api/categories/'
         response = api_client.get(url)
         assert response.status_code == 200
-        assert len(response.data) == 1
-        assert response.data[0]['name'] == 'Electronics'
+        assert len(response.data) == len(DEFAULT_CATEGORIES)
+
+        category_slugs = {item['slug'] for item in response.data}
+        assert category.slug in category_slugs
+        assert {slug for slug, _ in DEFAULT_CATEGORIES} == category_slugs
 
     def test_search_products(self, api_client, product):
         url = '/api/products/?search=smartphone'
