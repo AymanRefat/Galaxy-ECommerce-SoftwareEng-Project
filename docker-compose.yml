@@ -7,8 +7,8 @@ services:
     volumes:
       - ./backend:/app
       - media_data:/app/media
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     depends_on:
       - db
     environment:
@@ -32,8 +32,8 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     develop:
       watch:
         - action: sync
