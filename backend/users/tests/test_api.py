@@ -71,3 +71,34 @@ class TestUserAPI:
         response = api_client.post(url, data)
         assert response.status_code == 400
         assert 'username' in response.data
+
+    def test_register_vendor_missing_store_name(self, api_client):
+        url = '/api/users/register/'
+        data = {
+            'email': 'vendor_no_store@example.com',
+            'username': 'vendor_no_store',
+            'password': 'StrongPassword123!',
+            'user_type': 'VENDOR'
+        }
+        response = api_client.post(url, data)
+        assert response.status_code == 201
+        user = User.objects.get(email='vendor_no_store@example.com')
+        assert hasattr(user, 'vendor_profile')
+        assert user.vendor_profile.store_name == "vendor_no_store's Store"
+
+    def test_register_vendor_duplicate_store_name(self, api_client):
+        VendorProfile.objects.create(
+            user=User.objects.create_user(username='v1', email='v1@test.com', password='password'),
+            store_name='Duplicate Store'
+        )
+        url = '/api/users/register/'
+        data = {
+            'email': 'v2@test.com',
+            'username': 'v2',
+            'password': 'StrongPassword123!',
+            'user_type': 'VENDOR',
+            'store_name': 'Duplicate Store'
+        }
+        response = api_client.post(url, data)
+        assert response.status_code == 400
+        assert 'store_name' in response.data

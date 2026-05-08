@@ -27,8 +27,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             if not store_name:
                 store_name = f"{user.username}'s Store"
                 
+            from django.db import transaction
             try:
-                VendorProfile.objects.create(user=user, store_name=store_name, is_approved=False)
+                with transaction.atomic():
+                    VendorProfile.objects.create(user=user, store_name=store_name, is_approved=False)
             except IntegrityError:
                 user.delete()
                 raise ValidationError({"store_name": "This store name is already taken. Please choose another."})

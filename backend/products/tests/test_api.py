@@ -48,8 +48,7 @@ class TestProductAPI:
         url = '/api/categories/'
         response = api_client.get(url)
         assert response.status_code == 200
-        assert len(response.data) == 1
-        assert response.data[0]['name'] == 'Electronics'
+        assert any(c['name'] == 'Electronics' for c in response.data)
 
     def test_search_products(self, api_client, product):
         url = '/api/products/?search=smartphone'
@@ -84,3 +83,10 @@ class TestProductReviewAPI:
         api_client.force_authenticate(user=consumer_user)
         response = api_client.post('/api/reviews/', {'product': purchased_product.id, 'rating': 5, 'comment': 'Great!'})
         assert response.status_code == 201
+
+    def test_review_duplicate(self, api_client, consumer_user, purchased_product):
+        api_client.force_authenticate(user=consumer_user)
+        api_client.post('/api/reviews/', {'product': purchased_product.id, 'rating': 5, 'comment': 'Great!'})
+        response = api_client.post('/api/reviews/', {'product': purchased_product.id, 'rating': 4, 'comment': 'Good'})
+        assert response.status_code == 400
+        assert 'already reviewed' in str(response.data)

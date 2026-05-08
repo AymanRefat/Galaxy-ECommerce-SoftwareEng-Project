@@ -15,7 +15,7 @@ class VendorSubscription(models.Model):
         ('CANCELED', 'Canceled'),
         ('PAST_DUE', 'Past Due'),
     )
-    vendor = models.OneToOneField(VendorProfile, on_delete=models.CASCADE, related_name='subscription')
+    vendor = models.ForeignKey(VendorProfile, on_delete=models.CASCADE, related_name='subscriptions')
     plan = models.ForeignKey(SubscriptionPlan, on_delete=models.SET_NULL, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE')
     start_date = models.DateTimeField()

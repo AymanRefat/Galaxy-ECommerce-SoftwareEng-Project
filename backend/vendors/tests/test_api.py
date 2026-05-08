@@ -131,3 +131,40 @@ class TestVendorAPI:
         assert response.status_code == 200
         vendor_profile.refresh_from_db()
         assert str(vendor_profile.commission_rate) == '7.50'
+
+    def test_unapproved_vendor_cannot_create_product(self, api_client, vendor_user, category):
+        unapproved_profile = VendorProfile.objects.create(user=vendor_user, store_name='Store 2', is_approved=False)
+        api_client.force_authenticate(user=vendor_user)
+        response = api_client.post('/api/vendors/dashboard/products/', {
+            'name': 'Galaxy Keyboard',
+            'description': 'Mechanical keyboard',
+            'price': '250.00',
+            'stock_quantity': 9,
+            'sku': 'KEY-002',
+            'category_id': category.id,
+        }, format='json')
+        assert response.status_code == 403
+        assert 'pending approval' in str(response.data)
+
+    def test_unapproved_vendor_cannot_update_product(self, api_client, vendor_user, category):
+        unapproved_profile = VendorProfile.objects.create(user=vendor_user, store_name='Store 2', is_approved=False)
+        product = Product.objects.create(vendor=unapproved_profile, category=category, name='Mouse', description='Wireless', price='99.99', stock_quantity=4, sku='MOUSE-002')
+        api_client.force_authenticate(user=vendor_user)
+        response = api_client.patch(f'/api/vendors/dashboard/products/{product.id}/', {
+            'stock_quantity': 12,
+        }, format='json')
+        assert response.status_code == 403
+        assert 'pending approval' in str(response.data)
+
+    def test_unapproved_vendor_cannot_update_order(self, api_client, vendor_user, category):
+        unapproved_profile = VendorProfile.objects.create(user=vendor_user, store_name='Store 2', is_approved=False)
+        product = Product.objects.create(vendor=unapproved_profile, category=category, name='Mouse', description='Wireless', price='99.99', stock_quantity=4, sku='MOUSE-002')
+        consumer = User.objects.create_user(username='buyer', email='buyer@test.com', password='password', user_type='CONSUMER')
+        order = Order.objects.create(user=consumer, tracking_number='TRACK123', total_amount='99.99')
+        order_item = OrderItem.objects.create(order=order, product=product, vendor=unapproved_profile, quantity=1, price_at_purchase='99.99', commission_amount='10.00', vendor_earnings='89.99')
+        api_client.force_authenticate(user=vendor_user)
+        response = api_client.patch(f'/api/vendors/dashboard/orders/{order_item.id}/', {
+            'status': 'SHIPPED',
+        }, format='json')
+        assert response.status_code == 403
+        assert 'pending approval' in str(response.data)

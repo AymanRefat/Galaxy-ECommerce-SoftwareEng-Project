@@ -33,3 +33,28 @@ class TestSubscriptionsAPI:
         assert response.status_code == 201
         assert response.data['status'] == 'ACTIVE'
         assert VendorSubscription.objects.count() == 1
+
+    def test_list_subscriptions_non_vendor(self, api_client):
+        user = User.objects.create_user(username='consumer', email='consumer@test.com', password='password', user_type='CONSUMER')
+        api_client.force_authenticate(user=user)
+        response = api_client.get('/api/subscriptions/my-subscription/')
+        assert response.status_code == 200
+        assert len(response.data) == 0
+
+    def test_subscribe_plan_non_vendor(self, api_client, plan):
+        user = User.objects.create_user(username='consumer1', email='c1@test.com', password='password', user_type='CONSUMER')
+        api_client.force_authenticate(user=user)
+        response = api_client.post('/api/subscriptions/my-subscription/', {'plan': plan.id})
+        assert response.status_code == 403
+
+    def test_subscribe_plan_cancels_existing(self, api_client, vendor_user, vendor_profile, plan):
+        api_client.force_authenticate(user=vendor_user)
+        # First subscription
+        api_client.post('/api/subscriptions/my-subscription/', {'plan': plan.id})
+        assert VendorSubscription.objects.filter(vendor=vendor_profile, status='ACTIVE').count() == 1
+        
+        # Second subscription
+        response = api_client.post('/api/subscriptions/my-subscription/', {'plan': plan.id})
+        assert response.status_code == 201
+        assert VendorSubscription.objects.filter(vendor=vendor_profile, status='CANCELED').count() == 1
+        assert VendorSubscription.objects.filter(vendor=vendor_profile, status='ACTIVE').count() == 1

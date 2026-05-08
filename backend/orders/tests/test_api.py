@@ -81,3 +81,31 @@ class TestOrderAPI:
         cart_response = api_client.get('/api/cart/')
         assert cart_response.status_code == 200
         assert cart_response.data['items'] == []
+
+    def test_add_to_cart_missing_product(self, api_client):
+        response = api_client.post('/api/cart/add_item/', {'quantity': 1}, format='json')
+        assert response.status_code == 400
+        assert 'product ID required' in response.data['detail']
+
+    def test_add_to_cart_invalid_quantity(self, api_client, product):
+        response = api_client.post('/api/cart/add_item/', {'product': product.id, 'quantity': 'abc'}, format='json')
+        assert response.status_code == 400
+        assert 'Quantity must be a whole number' in response.data['detail']
+
+    def test_add_to_cart_zero_quantity(self, api_client, product):
+        response = api_client.post('/api/cart/add_item/', {'product': product.id, 'quantity': 0}, format='json')
+        assert response.status_code == 400
+        assert 'Quantity change cannot be zero' in response.data['detail']
+
+    def test_checkout_empty_cart(self, api_client, consumer_user):
+        api_client.force_authenticate(user=consumer_user)
+        response = api_client.post('/api/orders/checkout/', {'payment_token': 'VALID_TOKEN'}, format='json')
+        assert response.status_code == 400
+        assert 'Cart is empty' in response.data['detail']
+
+    def test_checkout_missing_payment_token(self, api_client, consumer_user, product):
+        api_client.force_authenticate(user=consumer_user)
+        api_client.post('/api/cart/add_item/', {'product': product.id, 'quantity': 1}, format='json')
+        response = api_client.post('/api/orders/checkout/', {}, format='json')
+        assert response.status_code == 400
+        assert 'Payment token is required' in response.data['detail']
